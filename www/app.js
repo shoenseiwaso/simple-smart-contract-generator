@@ -7,7 +7,7 @@ function generateContract() {
 
 pragma solidity ^0.8.0;
 
-/// @notice ${tokenName} is an ERC20 token contract. THIS IS FOR ILLUSTRATIVE PURPOSES ONLY AND THIS CODE IS UNAUDITED!
+/// @notice ${tokenName} is an ERC20 token contract. THIS PROJECT IS FOR ILLUSTRATIVE PURPOSES ONLY AND THE GENERATED CODE IS UNAUDITED AND SHOULD NOT BE USED IN PRODUCTION!
 
 contract Token${tokenName} {
 

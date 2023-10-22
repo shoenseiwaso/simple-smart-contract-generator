@@ -23,3 +23,7 @@ $ python3 -m http.server
 Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000/) ...
 ```
 4. Open a browser to http://localhost:8000
+
+## CAUTION!
+
+THIS PROJECT IS FOR ILLUSTRATIVE PURPOSES ONLY AND THE GENERATED CODE IS UNAUDITED AND SHOULD NOT BE USED IN PRODUCTION!
