@@ -100,9 +100,8 @@ contract Token${tokenName} {
 }
 
 function generateTestCode(tokenName, tokenSymbol, contractType) {
-    let baseTestCode = `
-const ${tokenName} = artifacts.require('${tokenName}');
-
+    let baseTestCode = `const ${tokenName} = artifacts.require('${tokenName}');
+    
 contract('${tokenName} tests', (accounts) => {
     let instance;
 
@@ -110,34 +109,102 @@ contract('${tokenName} tests', (accounts) => {
         instance = await ${tokenName}.new();
     });
 
-    it('should initialize with the correct name and symbol', async () => {
+    it('should initialize with the correct name, symbol, decimals, and total supply', async () => {
         const name = await instance.name();
         const symbol = await instance.symbol();
+        const decimals = await instance.decimals();
+        const totalSupply = await instance.totalSupply();
 
         assert.equal(name, "${tokenName}");
         assert.equal(symbol, "${tokenSymbol}");
+        assert.equal(decimals, 18);  // Assuming a fixed decimals value for this example
+        assert.equal(totalSupply, 0); // Assuming the initial total supply is 0
     });
 
-    // ... other common tests ...
+    it('should transfer tokens correctly', async () => {
+        await instance.mint(accounts[0], 1000);
+        await instance.transfer(accounts[1], 500, { from: accounts[0] });
+        const balance = await instance.balanceOf(accounts[1]);
+        assert.equal(balance, 500);
+    });
 
+    it('should fail when trying to transfer more tokens than available', async () => {
+        let errorOccurred = false;
+        try {
+            await instance.transfer(accounts[1], 2000, { from: accounts[0] });
+        } catch (error) {
+            errorOccurred = true;
+        }
+        assert.equal(errorOccurred, true);
+    });
+
+    it('should handle approvals correctly', async () => {
+        await instance.approve(accounts[1], 300, { from: accounts[0] });
+        const allowance = await instance.allowance(accounts[0], accounts[1]);
+        assert.equal(allowance, 300);
+    });
+
+    it('should handle transferFrom correctly', async () => {
+        await instance.mint(accounts[0], 1000);
+        await instance.approve(accounts[1], 300, { from: accounts[0] });
+        await instance.transferFrom(accounts[0], accounts[2], 200, { from: accounts[1] });
+        const balance = await instance.balanceOf(accounts[2]);
+        assert.equal(balance, 200);
+    });
+
+    it('should fail transferFrom when trying to transfer more than allowance', async () => {
+        await instance.mint(accounts[0], 1000);
+        await instance.approve(accounts[1], 300, { from: accounts[0] });
+        let errorOccurred = false;
+        try {
+            await instance.transferFrom(accounts[0], accounts[2], 400, { from: accounts[1] });
+        } catch (error) {
+            errorOccurred = true;
+        }
+        assert.equal(errorOccurred, true);
+    });
 `;
-
-    if(contractType === "mintable") {
-        baseTestCode += `
+    
+        if(contractType === "mintable") {
+            baseTestCode += `
     it('should mint tokens correctly', async () => {
         await instance.mint(accounts[0], 1000);
         const balance = await instance.balanceOf(accounts[0]);
         assert.equal(balance, 1000);
     });
-        `;
-    } else if(contractType === "burnable") {
-        baseTestCode += `
+
+    it('should fail if non-minters try to mint tokens', async () => {
+        let errorOccurred = false;
+        try {
+            await instance.mint(accounts[0], 1000, { from: accounts[1] }); // Assuming only the contract owner (default account[0]) can mint in our contract design
+        } catch (error) {
+            errorOccurred = true;
+        }
+        assert.equal(errorOccurred, true);
+    });
+`;
+        }
+    
+        if(contractType === "burnable") {
+            baseTestCode += `
     it('should burn tokens correctly', async () => {
+        await instance.mint(accounts[0], 1000);
         await instance.burn(500, { from: accounts[0] });
         const balance = await instance.balanceOf(accounts[0]);
         assert.equal(balance, 500);
     });
-        `;
+
+    it('should fail if trying to burn more tokens than held', async () => {
+        await instance.mint(accounts[0], 1000);
+        let errorOccurred = false;
+        try {
+            await instance.burn(1500, { from: accounts[0] });
+        } catch (error) {
+            errorOccurred = true;
+        }
+        assert.equal(errorOccurred, true, "Should have thrown an error when burning more than the balance");
+    });
+`;
     }
 
     baseTestCode += "});";
