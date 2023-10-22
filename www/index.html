@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Frontend Smart Contract Wizard</title>
+    <title>Simple Smart Contract Wizard</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-    <h1>Smart Contract Wizard</h1>
+    <h1>Simple Smart Contract Wizard</h1>
 
     <label for="tokenName">Token Name:</label>
     <input type="text" id="tokenName" placeholder="Enter Token Name">
@@ -14,10 +16,25 @@
     <label for="tokenSymbol">Token Symbol:</label>
     <input type="text" id="tokenSymbol" placeholder="Enter Token Symbol">
 
+    <label>Contract Type:</label>
+    <div>
+        <input type="radio" id="standard" name="contractType" value="standard" checked>
+        <label for="standard">Standard ERC-20</label>
+
+        <input type="radio" id="mintable" name="contractType" value="mintable">
+        <label for="mintable">Mintable ERC-20</label>
+
+        <input type="radio" id="burnable" name="contractType" value="burnable">
+        <label for="burnable">Burnable ERC-20</label>
+    </div>
+
     <button onclick="generateContract()">Generate Contract</button>
 
     <textarea id="contractCode" placeholder="Your contract code will appear here" readonly></textarea>
 
+    <textarea id="testCode" placeholder="Your test code will appear here" readonly></textarea>
+
     <script src="app.js"></script>
 </body>
+
 </html>
