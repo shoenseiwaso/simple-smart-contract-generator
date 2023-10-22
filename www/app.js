@@ -93,4 +93,54 @@ contract Token${tokenName} {
     baseContract += `}`;
 
     document.getElementById('contractCode').value = baseContract;
+
+    // Generate corresponding test code:
+    let testCode = generateTestCode(tokenName, tokenSymbol, contractType);
+    document.getElementById('testCode').value = testCode;
+}
+
+function generateTestCode(tokenName, tokenSymbol, contractType) {
+    let baseTestCode = `
+const ${tokenName} = artifacts.require('${tokenName}');
+
+contract('${tokenName} tests', (accounts) => {
+    let instance;
+
+    beforeEach(async () => {
+        instance = await ${tokenName}.new();
+    });
+
+    it('should initialize with the correct name and symbol', async () => {
+        const name = await instance.name();
+        const symbol = await instance.symbol();
+
+        assert.equal(name, "${tokenName}");
+        assert.equal(symbol, "${tokenSymbol}");
+    });
+
+    // ... other common tests ...
+
+`;
+
+    if(contractType === "mintable") {
+        baseTestCode += `
+    it('should mint tokens correctly', async () => {
+        await instance.mint(accounts[0], 1000);
+        const balance = await instance.balanceOf(accounts[0]);
+        assert.equal(balance, 1000);
+    });
+        `;
+    } else if(contractType === "burnable") {
+        baseTestCode += `
+    it('should burn tokens correctly', async () => {
+        await instance.burn(500, { from: accounts[0] });
+        const balance = await instance.balanceOf(accounts[0]);
+        assert.equal(balance, 500);
+    });
+        `;
+    }
+
+    baseTestCode += "});";
+
+    return baseTestCode;
 }
